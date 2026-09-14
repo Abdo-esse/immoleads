@@ -1,5 +1,5 @@
-// ImmoLeads Service Worker — Cache-first for assets, network-first for API
-const CACHE_NAME = 'immoleads-v1'
+// ImmoLeads Service Worker — v2 (Strict CRM data isolation)
+const CACHE_NAME = 'immoleads-v2'
 const STATIC_ASSETS = [
   '/icons/icon-192.png',
   '/icons/icon-512.png',
@@ -13,7 +13,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting()
 })
 
-// Activate: clean old caches
+// Activate: clean all previous caches (purges legacy v1 cache)
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -23,7 +23,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
-// Fetch: network-first for API/pages, cache-first for static assets
+// Fetch: network-only for sensitive CRM dashboard & API, cache-first for static assets
 self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
@@ -31,13 +31,19 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (request.method !== 'GET') return
 
-  // API calls & navigation: network-first
-  if (url.pathname.startsWith('/api/') || request.mode === 'navigate') {
+  // 1. CRITICAL: Never cache dashboard pages or API calls in CacheStorage to prevent PII leaks
+  if (url.pathname.startsWith('/dashboard') || url.pathname.startsWith('/api/')) {
+    // Strictly network-only, no local storage
+    event.respondWith(fetch(request))
+    return
+  }
+
+  // 2. Public navigation pages (e.g. landing, properties, request-visit): network-first
+  if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Cache successful navigation responses
-          if (request.mode === 'navigate' && response.ok) {
+          if (response.ok) {
             const clone = response.clone()
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
           }
@@ -48,7 +54,7 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Static assets: cache-first
+  // 3. Static assets: cache-first
   if (
     url.pathname.startsWith('/icons/') ||
     url.pathname.startsWith('/_next/static/') ||

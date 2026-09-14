@@ -66,6 +66,7 @@ export function SettingsClient({ data }: { data: SettingsData }) {
   const [inviteEmail, setInviteEmail] = useState('')
   const [invitePhone, setInvitePhone] = useState('')
   const [inviteRole, setInviteRole] = useState<'admin' | 'agent'>('agent')
+  const [sendEmailInvite, setSendEmailInvite] = useState(true)
   const [inviting, setInviting] = useState(false)
 
   // Handlers
@@ -143,11 +144,20 @@ export function SettingsClient({ data }: { data: SettingsData }) {
         email: inviteEmail,
         phone: invitePhone,
         role: inviteRole,
+        sendEmailInvite,
       })
       if (res.error) {
         toast.error(res.error)
       } else {
-        toast.success('Collaborateur ajouté à l’agence !')
+        if (res.invitedViaEmail) {
+          toast.success('Invitation envoyée par email au collaborateur !')
+        } else if (res.temporaryPassword) {
+          toast.success(`Collaborateur créé ! Mot de passe temporaire : ${res.temporaryPassword}`, {
+            duration: 12000,
+          })
+        } else {
+          toast.success('Collaborateur ajouté à l’agence !')
+        }
         setShowInviteModal(false)
         setInviteName('')
         setInviteEmail('')
@@ -757,6 +767,19 @@ export function SettingsClient({ data }: { data: SettingsData }) {
                   <option value="agent">Agent (accès à ses leads et propriétés)</option>
                   <option value="admin">Administrateur (gestion totale et équipe)</option>
                 </select>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="sendEmailInvite"
+                  checked={sendEmailInvite}
+                  onChange={(e) => setSendEmailInvite(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <label htmlFor="sendEmailInvite" className="text-xs text-muted-foreground font-medium cursor-pointer">
+                  Envoyer une invitation par email (si SMTP Gmail configuré)
+                </label>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t">

@@ -156,14 +156,14 @@ export function rankProperties(
  */
 export function getMatchLabel(score: number): {
   label: string
-  emoji: string
+  key: 'excellent' | 'good' | 'medium' | 'low'
   colorClass: string
 } {
   if (score >= 85)
-    return { label: 'Excellent', emoji: '🎯', colorClass: 'text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-950/30' }
+    return { label: 'Excellent', key: 'excellent', colorClass: 'text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-950/30' }
   if (score >= 65)
-    return { label: 'Bon', emoji: '✅', colorClass: 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-950/30' }
+    return { label: 'Bon', key: 'good', colorClass: 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-950/30' }
   if (score >= 45)
-    return { label: 'Moyen', emoji: '🔶', colorClass: 'text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-950/30' }
-  return { label: 'Faible', emoji: '⚪', colorClass: 'text-gray-500 bg-gray-100 dark:text-gray-400 dark:bg-gray-800' }
+    return { label: 'Moyen', key: 'medium', colorClass: 'text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-950/30' }
+  return { label: 'Faible', key: 'low', colorClass: 'text-gray-500 bg-gray-100 dark:text-gray-400 dark:bg-gray-800' }
 }

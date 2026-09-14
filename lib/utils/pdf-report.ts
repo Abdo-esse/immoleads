@@ -149,7 +149,7 @@ export function generateMonthlyReport(data: ReportData) {
     // Table rows
     doc.setFont('helvetica', 'normal')
     data.leaderboard.slice(0, 10).forEach((agent) => {
-      const medal = agent.rank <= 3 ? ['🥇', '🥈', '🥉'][agent.rank - 1] : String(agent.rank)
+      const medal = `#${agent.rank}`
 
       doc.setTextColor(30, 30, 50)
       doc.setFontSize(8)

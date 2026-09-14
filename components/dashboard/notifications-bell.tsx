@@ -297,10 +297,10 @@ export function NotificationsBell() {
                   } catch {}
 
                   if (nextMuted) {
-                    toast.info('Mode silencieux activé 🔇')
+                    toast.info('Mode silencieux activé')
                   } else {
                     playNotificationSound()
-                    toast.success('Son des notifications activé 🔔')
+                    toast.success('Son des notifications activé')
                   }
                 }}
                 className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition border ${

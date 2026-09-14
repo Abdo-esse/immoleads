@@ -11,11 +11,22 @@ import { triggerFollowUpReminders } from '@/lib/actions/follow-up-reminders'
  * - Manual trigger via GET /api/cron/follow-ups?secret=xxx
  */
 export async function GET(request: NextRequest) {
-  // Optional: verify cron secret
-  const secret = request.nextUrl.searchParams.get('secret')
   const expectedSecret = process.env.CRON_SECRET
 
-  if (expectedSecret && secret !== expectedSecret) {
+  if (!expectedSecret) {
+    console.error('[Cron Security] CRON_SECRET is not configured on the server.')
+    return NextResponse.json(
+      { error: 'Server configuration error: CRON_SECRET is not set' },
+      { status: 500 }
+    )
+  }
+
+  const authHeader = request.headers.get('authorization')
+  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null
+  const querySecret = request.nextUrl.searchParams.get('secret')
+  const providedSecret = bearerToken || querySecret
+
+  if (!providedSecret || providedSecret !== expectedSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

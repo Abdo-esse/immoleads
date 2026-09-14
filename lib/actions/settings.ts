@@ -123,10 +123,12 @@ export async function addTeamMember(values: {
   email: string
   phone?: string
   role: 'admin' | 'agent'
+  sendEmailInvite?: boolean
 }) {
   const { profile } = await requireAdmin()
 
   const email = values.email.trim().toLowerCase()
+  const sendEmailInvite = values.sendEmailInvite ?? true
 
   // Check if profile with email already exists
   const { data: existing } = await supabaseAdmin
@@ -142,24 +144,73 @@ export async function addTeamMember(values: {
     return { error: 'Cet email est déjà associé à un compte utilisateur existant.' }
   }
 
-  // Create auth user via admin client
-  const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
-    email,
-    password: 'Demo@' + Math.floor(100000 + Math.random() * 900000),
-    email_confirm: true,
-    user_metadata: {
-      full_name: values.full_name.trim(),
-      agency_id: profile.agency_id,
-    },
-  })
+  let userId: string | null = null
+  let temporaryPassword: string | null = null
+  let invitedViaEmail = false
 
-  if (authError || !authUser?.user) {
-    return { error: authError?.message || 'Erreur lors de la création du compte.' }
+  const crypto = await import('crypto')
+
+  // 1. If email invite requested, try inviteUserByEmail first
+  if (sendEmailInvite) {
+    const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
+      email,
+      {
+        data: {
+          full_name: values.full_name.trim(),
+          agency_id: profile.agency_id,
+          role: values.role,
+        },
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback?next=/auth/set-password`,
+      }
+    )
+
+    if (!inviteError && inviteData?.user) {
+      userId = inviteData.user.id
+      invitedViaEmail = true
+    }
   }
 
-  // Upsert profile
+  // 2. Fallback: if email invite not requested or failed (SMTP not set up yet), create directly with password
+  if (!userId) {
+    temporaryPassword = 'Immo!' + crypto.randomBytes(6).toString('hex')
+
+    const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: temporaryPassword,
+      email_confirm: true,
+      user_metadata: {
+        full_name: values.full_name.trim(),
+        agency_id: profile.agency_id,
+        role: values.role,
+      },
+    })
+
+    if (authUser?.user) {
+      userId = authUser.user.id
+    } else {
+      // If user already exists in auth.users, find their ID
+      const { data: listData } = await supabaseAdmin.auth.admin.listUsers()
+      const existingAuthUser = listData?.users?.find(
+        (u: any) => u.email?.toLowerCase() === email
+      )
+
+      if (existingAuthUser) {
+        userId = existingAuthUser.id
+      } else {
+        const isDbError = authError?.message?.includes('Database error')
+
+        const errorMessage = isDbError
+          ? "Erreur de déclencheur Supabase : Veuillez exécuter la migration 016 dans votre Supabase SQL Editor."
+          : authError?.message || 'Erreur lors de la création du compte.'
+
+        return { error: errorMessage }
+      }
+    }
+  }
+
+  // Upsert profile in CRM database
   const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
-    id: authUser.user.id,
+    id: userId,
     agency_id: profile.agency_id,
     full_name: values.full_name.trim(),
     email,
@@ -173,5 +224,9 @@ export async function addTeamMember(values: {
   }
 
   revalidatePath('/dashboard/settings')
-  return { success: true }
+  return {
+    success: true,
+    invitedViaEmail,
+    temporaryPassword: invitedViaEmail ? null : temporaryPassword,
+  }
 }

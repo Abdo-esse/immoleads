@@ -291,8 +291,9 @@ export function LeadDetailClient({ lead, notes, activities, agents, matchedPrope
                   </div>
                 </div>
                 {lead.property && (
-                  <p className="text-xs text-muted-foreground">
-                    📍 {lead.property.title} — {lead.property.city}
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    <span>{lead.property.title} — {lead.property.city}</span>
                   </p>
                 )}
                 <button
@@ -382,10 +383,13 @@ export function LeadDetailClient({ lead, notes, activities, agents, matchedPrope
           <div className={cn('rounded-xl border bg-card p-5', mobileTab === 'info' ? 'block' : 'hidden lg:block')}>
             <h3 className="text-sm font-semibold mb-3">Next Follow-up</h3>
             {lead.next_follow_up_at && (
-              <p className="text-sm mb-2">
-                📅 {new Date(lead.next_follow_up_at).toLocaleDateString('fr-FR', {
-                  weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
-                })}
+              <p className="text-sm mb-2 flex items-center gap-1.5">
+                <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span>
+                  {new Date(lead.next_follow_up_at).toLocaleDateString('fr-FR', {
+                    weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
+                  })}
+                </span>
               </p>
             )}
             <input

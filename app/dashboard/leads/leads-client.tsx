@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Search, Phone, MessageSquare, Eye, UserPlus, Filter, X, Download, Upload, CheckSquare, Square, Trash2, AlertTriangle } from 'lucide-react'
+import { Search, Phone, MessageSquare, Eye, UserPlus, Filter, X, Download, Upload, CheckSquare, Square, Trash2, AlertTriangle, Building2, MapPin, User } from 'lucide-react'
 import { updateLeadStatus, assignLead } from '@/lib/actions/leads'
 import { bulkAssignLeads, bulkUpdateStatus, bulkDeleteLeads } from '@/lib/actions/bulk'
 import { LEAD_STATUS_CONFIG, LEAD_SOURCES } from '@/lib/constants'
@@ -342,16 +342,25 @@ export function LeadsClient({ leads, agents }: Props) {
                   <div className="mt-3 flex items-center justify-between text-xs border-t pt-2.5">
                     <div className="text-muted-foreground truncate max-w-[180px]">
                       {lead.property ? (
-                        <span className="font-medium text-foreground">🏠 {lead.property.title}</span>
+                        <span className="font-medium text-foreground inline-flex items-center gap-1">
+                          <Building2 className="h-3 w-3 shrink-0 text-muted-foreground" />
+                          <span className="truncate">{lead.property.title}</span>
+                        </span>
                       ) : lead.city ? (
-                        <span>📍 {lead.city}</span>
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin className="h-3 w-3 shrink-0 text-muted-foreground" />
+                          <span>{lead.city}</span>
+                        </span>
                       ) : (
                         <span className="capitalize">{lead.source || 'Prospect'}</span>
                       )}
                     </div>
                     <div className="text-muted-foreground">
                       {lead.assigned_agent ? (
-                        <span className="font-medium text-foreground">👤 {lead.assigned_agent.full_name}</span>
+                        <span className="font-medium text-foreground inline-flex items-center gap-1">
+                          <User className="h-3 w-3 shrink-0 text-muted-foreground" />
+                          <span>{lead.assigned_agent.full_name}</span>
+                        </span>
                       ) : (
                         <span className="text-amber-600 dark:text-amber-400 font-medium">Non assigné</span>
                       )}

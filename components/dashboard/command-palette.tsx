@@ -180,6 +180,7 @@ export function CommandPalette() {
                 {items.map((result) => {
                   const currentIndex = flatIndex++
                   const isSelected = currentIndex === selectedIndex
+                  const IconComp = config?.icon || Users
                   return (
                     <button
                       key={`${result.type}-${result.id}`}
@@ -188,7 +189,7 @@ export function CommandPalette() {
                         isSelected ? 'bg-primary/10 text-primary' : 'hover:bg-muted'
                       }`}
                     >
-                      <span className="text-lg shrink-0">{result.icon}</span>
+                      <IconComp className={`h-4 w-4 shrink-0 ${config?.color || 'text-muted-foreground'}`} />
                       <div className="flex-1 text-left">
                         <p className="font-medium">{result.title}</p>
                         <p className="text-[11px] text-muted-foreground">{result.subtitle}</p>
@@ -226,7 +227,7 @@ export function CommandPalette() {
               <kbd className="rounded border bg-muted px-1 py-0.5">↑↓</kbd> naviguer
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="rounded border bg-muted px-1 py-0.5">⏎</kbd> ouvrir
+              <kbd className="rounded border bg-muted px-1 py-0.5">Enter</kbd> ouvrir
             </span>
           </div>
           <span className="flex items-center gap-1">

@@ -9,9 +9,9 @@ interface Props {
 }
 
 const MEDAL_STYLES = [
-  { emoji: '🥇', bg: 'bg-gradient-to-br from-yellow-400/20 to-amber-500/20', border: 'border-yellow-400/50', ring: 'ring-yellow-400/30' },
-  { emoji: '🥈', bg: 'bg-gradient-to-br from-gray-300/20 to-slate-400/20', border: 'border-gray-400/50', ring: 'ring-gray-400/30' },
-  { emoji: '🥉', bg: 'bg-gradient-to-br from-orange-400/20 to-amber-600/20', border: 'border-orange-400/50', ring: 'ring-orange-400/30' },
+  { rank: '#1', color: 'text-yellow-500', bg: 'bg-gradient-to-br from-yellow-400/20 to-amber-500/20', border: 'border-yellow-400/50', ring: 'ring-yellow-400/30' },
+  { rank: '#2', color: 'text-slate-400', bg: 'bg-gradient-to-br from-gray-300/20 to-slate-400/20', border: 'border-gray-400/50', ring: 'ring-gray-400/30' },
+  { rank: '#3', color: 'text-amber-600', bg: 'bg-gradient-to-br from-orange-400/20 to-amber-600/20', border: 'border-orange-400/50', ring: 'ring-orange-400/30' },
 ]
 
 export function AgentLeaderboard({ entries }: Props) {
@@ -48,8 +48,11 @@ export function AgentLeaderboard({ entries }: Props) {
               key={entry.id}
               className={`relative overflow-hidden rounded-xl border ${style.border} ${style.bg} p-5 shadow-sm transition-all hover:shadow-md`}
             >
-              {/* Medal */}
-              <div className="absolute top-3 right-3 text-2xl">{style.emoji}</div>
+              {/* Medal / Rank */}
+              <div className={`absolute top-3 right-3 flex items-center gap-1 font-bold text-xs ${style.color}`}>
+                {i === 0 ? <Trophy className="h-4 w-4 text-yellow-500" /> : <Medal className={`h-4 w-4 ${style.color}`} />}
+                <span>{style.rank}</span>
+              </div>
 
               {/* Avatar */}
               <div className={`flex h-12 w-12 items-center justify-center rounded-full bg-background/80 text-lg font-bold ring-2 ${style.ring}`}>

@@ -92,7 +92,7 @@ export async function importLeadsBatch(rows: ImportedLeadRow[]): Promise<ImportR
         lead_id: item.id,
         action: 'lead_created',
         details: 'Lead importé via fichier CSV',
-        performed_by: profile.id,
+        user_id: profile.id,
       }))
 
       await supabaseAdmin.from('lead_activities').insert(activities)

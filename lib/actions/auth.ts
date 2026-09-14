@@ -28,8 +28,17 @@ export async function signIn(formData: FormData) {
     return { error: error.message }
   }
 
-  const redirectTo = formData.get('redirect') as string
-  redirect(redirectTo || '/dashboard')
+  const rawRedirect = formData.get('redirect')
+  const redirectTo = typeof rawRedirect === 'string' ? rawRedirect.trim() : ''
+
+  // Prevent Open Redirect (CWE-601): only allow internal relative paths
+  const isSafeRedirect =
+    redirectTo.startsWith('/') &&
+    !redirectTo.startsWith('//') &&
+    !redirectTo.includes('\\') &&
+    !redirectTo.includes('://')
+
+  redirect(isSafeRedirect ? redirectTo : '/dashboard')
 }
 
 /**

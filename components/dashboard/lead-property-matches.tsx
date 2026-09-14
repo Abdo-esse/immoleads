@@ -13,6 +13,10 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
+  Target,
+  CheckCircle2,
+  AlertTriangle,
+  Circle,
 } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
 import { getMatchLabel, type MatchResult } from '@/lib/utils/matching'
@@ -21,6 +25,13 @@ import type { Lead } from '@/types'
 interface Props {
   matches: MatchResult[]
   lead: Pick<Lead, 'name' | 'phone' | 'city' | 'budget_min' | 'budget_max'>
+}
+
+const MATCH_ICONS = {
+  excellent: Target,
+  good: CheckCircle2,
+  medium: AlertTriangle,
+  low: Circle,
 }
 
 export function LeadPropertyMatches({ matches, lead }: Props) {
@@ -48,11 +59,11 @@ export function LeadPropertyMatches({ matches, lead }: Props) {
     const propertyLines = selectedMatches
       .map((m, i) => {
         const p = m.property
-        return `${i + 1}. *${p.title}*\n   📍 ${p.city}${p.district ? ` - ${p.district}` : ''}\n   💰 ${formatPrice(p.price)} MAD\n   🏠 ${p.type}${p.bedrooms ? ` · ${p.bedrooms} ch.` : ''}${p.area ? ` · ${p.area}m²` : ''}\n   ✨ Match: ${m.score}%`
+        return `${i + 1}. *${p.title}*\n   Ville: ${p.city}${p.district ? ` - ${p.district}` : ''}\n   Prix: ${formatPrice(p.price)} MAD\n   Type: ${p.type}${p.bedrooms ? ` · ${p.bedrooms} ch.` : ''}${p.area ? ` · ${p.area}m²` : ''}\n   Match: ${m.score}%`
       })
       .join('\n\n')
 
-    const message = `Bonjour ${lead.name} 👋\n\nSuite à votre recherche, voici les biens qui correspondent à vos critères :\n\n${propertyLines}\n\nN'hésitez pas à me contacter pour organiser une visite ! 🏡`
+    const message = `Bonjour ${lead.name},\n\nSuite à votre recherche, voici les biens qui correspondent à vos critères :\n\n${propertyLines}\n\nN'hésitez pas à me contacter pour organiser une visite !`
 
     const waUrl = `https://wa.me/${lead.phone.replace(/[^0-9+]/g, '')}?text=${encodeURIComponent(message)}`
     window.open(waUrl, '_blank')
@@ -102,6 +113,7 @@ export function LeadPropertyMatches({ matches, lead }: Props) {
           {matches.map((match) => {
             const p = match.property
             const matchInfo = getMatchLabel(match.score)
+            const MatchIcon = MATCH_ICONS[matchInfo.key]
             const isDetailOpen = showScoreDetails === p.id
 
             return (
@@ -114,7 +126,7 @@ export function LeadPropertyMatches({ matches, lead }: Props) {
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold shadow-sm ${matchInfo.colorClass}`}
                   >
-                    {matchInfo.emoji} {match.score}%
+                    <MatchIcon className="h-3 w-3" /> {match.score}%
                   </span>
                 </div>
 

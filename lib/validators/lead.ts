@@ -29,6 +29,9 @@ export const leadSchema = z.object({
   property_id: z.string().regex(pgUuidRegex, 'Identifiant propriété invalide').optional().nullable(),
   agency_id: z.string().regex(pgUuidRegex, 'Identifiant agence requis'),
 
+  // Anti-bot Honeypot field (should always be empty)
+  hp_company_field: z.string().optional().nullable(),
+
   // UTM tracking
   utm_source: z.string().optional().nullable(),
   utm_campaign: z.string().optional().nullable(),

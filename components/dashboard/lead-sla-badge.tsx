@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Flame, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 // ═══════════════════════════════════════════
 // SLA Badge — Dynamic lead urgency indicator
@@ -18,7 +19,7 @@ type Urgency = 'burning' | 'warm' | 'sla_breached' | 'contacted' | null
 
 interface UrgencyConfig {
   label: string
-  emoji: string
+  icon: any
   bgClass: string
   textClass: string
   pulseClass: string
@@ -27,28 +28,28 @@ interface UrgencyConfig {
 const URGENCY_CONFIG: Record<NonNullable<Urgency>, UrgencyConfig> = {
   burning: {
     label: 'Brûlant',
-    emoji: '🔥',
+    icon: Flame,
     bgClass: 'bg-red-100 dark:bg-red-950/40',
     textClass: 'text-red-700 dark:text-red-400',
     pulseClass: 'animate-pulse',
   },
   warm: {
     label: 'En attente',
-    emoji: '⏳',
+    icon: Clock,
     bgClass: 'bg-amber-100 dark:bg-amber-950/40',
     textClass: 'text-amber-700 dark:text-amber-400',
     pulseClass: '',
   },
   sla_breached: {
     label: 'SLA dépassé',
-    emoji: '⚠️',
+    icon: AlertTriangle,
     bgClass: 'bg-orange-100 dark:bg-orange-950/40',
     textClass: 'text-orange-700 dark:text-orange-400',
     pulseClass: '',
   },
   contacted: {
     label: 'Contacté',
-    emoji: '✅',
+    icon: CheckCircle2,
     bgClass: 'bg-green-100 dark:bg-green-950/40',
     textClass: 'text-green-700 dark:text-green-400',
     pulseClass: '',
@@ -114,6 +115,7 @@ export function LeadSlaBadge({ createdAt, status, lastContactedAt, compact = fal
   if (!urgency) return null
 
   const config = URGENCY_CONFIG[urgency]
+  const Icon = config.icon
 
   if (compact) {
     return (
@@ -121,7 +123,7 @@ export function LeadSlaBadge({ createdAt, status, lastContactedAt, compact = fal
         className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${config.bgClass} ${config.textClass} ${config.pulseClass}`}
         title={`${config.label} — Créé il y a ${elapsedText}`}
       >
-        {config.emoji}
+        <Icon className="h-3 w-3 shrink-0" />
         {urgency === 'burning' || urgency === 'sla_breached' ? elapsedText : config.label}
       </span>
     )
@@ -131,7 +133,7 @@ export function LeadSlaBadge({ createdAt, status, lastContactedAt, compact = fal
     <div
       className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium ${config.bgClass} ${config.textClass} ${config.pulseClass}`}
     >
-      <span>{config.emoji}</span>
+      <Icon className="h-3.5 w-3.5 shrink-0" />
       <span>{config.label}</span>
       <span className="text-[10px] opacity-70">({elapsedText})</span>
     </div>

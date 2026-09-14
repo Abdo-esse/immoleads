@@ -1,24 +1,8 @@
 -- ═══════════════════════════════════════════
--- 002: Create profiles table
--- Extends Supabase auth.users with app-specific data
+-- 016: Fix handle_new_user trigger fallback
+-- Prevents "Database error creating new user" when creating auth users
 -- ═══════════════════════════════════════════
 
-CREATE TABLE IF NOT EXISTS profiles (
-  id          UUID PRIMARY KEY REFERENCES auth.users (id) ON DELETE CASCADE,
-  agency_id   UUID NOT NULL REFERENCES agencies (id) ON DELETE CASCADE,
-  full_name   TEXT NOT NULL,
-  email       TEXT NOT NULL,
-  phone       TEXT,
-  role        TEXT NOT NULL DEFAULT 'agent' CHECK (role IN ('admin', 'agent')),
-  avatar_url  TEXT,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- Indexes
-CREATE INDEX idx_profiles_agency_id ON profiles (agency_id);
-CREATE INDEX idx_profiles_role ON profiles (role);
-
--- Automatically create a profile when a new auth user signs up
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 DECLARE

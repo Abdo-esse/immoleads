@@ -145,7 +145,7 @@ export async function autoAssignLead(
   await createNotification({
     agencyId,
     userId: agentId,
-    title: '🔄 Nouveau lead attribué (Round-Robin)',
+    title: 'Nouveau lead attribué (Round-Robin)',
     message: `${leadName} (${leadPhone})${city ? ` — ${city}` : ''} vous a été automatiquement assigné.`,
     type: 'lead_assigned',
     link: `/dashboard/leads/${leadId}`,

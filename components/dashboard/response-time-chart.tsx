@@ -1,6 +1,6 @@
 'use client'
 
-import { Clock, Zap, AlertTriangle } from 'lucide-react'
+import { Clock, Zap, AlertTriangle, CheckCircle2, AlertCircle } from 'lucide-react'
 import type { ResponseTimeData } from '@/lib/actions/performance'
 
 interface Props {
@@ -11,28 +11,28 @@ interface Props {
 const BADGE_CONFIG = {
   excellent: {
     label: '< 15min',
-    emoji: '⚡',
+    icon: Zap,
     color: 'text-emerald-600 dark:text-emerald-400',
     bg: 'bg-emerald-100 dark:bg-emerald-950/30',
     barColor: 'bg-emerald-500',
   },
   good: {
     label: '< 1h',
-    emoji: '✅',
+    icon: CheckCircle2,
     color: 'text-blue-600 dark:text-blue-400',
     bg: 'bg-blue-100 dark:bg-blue-950/30',
     barColor: 'bg-blue-500',
   },
   slow: {
     label: '< 2h',
-    emoji: '🔶',
+    icon: AlertTriangle,
     color: 'text-amber-600 dark:text-amber-400',
     bg: 'bg-amber-100 dark:bg-amber-950/30',
     barColor: 'bg-amber-500',
   },
   critical: {
     label: '> 2h',
-    emoji: '🔴',
+    icon: AlertCircle,
     color: 'text-red-600 dark:text-red-400',
     bg: 'bg-red-100 dark:bg-red-950/30',
     barColor: 'bg-red-500',
@@ -85,6 +85,7 @@ export function ResponseTimeChart({ agents, agencyAvg }: Props) {
       <div className="space-y-3">
         {agents.map((agent) => {
           const config = BADGE_CONFIG[agent.badge]
+          const Icon = config.icon
           const barWidth = Math.max(5, (agent.avgMinutes / maxMinutes) * 100)
 
           return (
@@ -93,7 +94,7 @@ export function ResponseTimeChart({ agents, agencyAvg }: Props) {
                 <span className="text-sm font-medium">{agent.agentName}</span>
                 <div className="flex items-center gap-2">
                   <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${config.bg} ${config.color}`}>
-                    {config.emoji} {config.label}
+                    <Icon className="h-3 w-3" /> {config.label}
                   </span>
                   <span className="text-sm font-bold w-16 text-right">{formatMinutes(agent.avgMinutes)}</span>
                 </div>
@@ -114,12 +115,15 @@ export function ResponseTimeChart({ agents, agencyAvg }: Props) {
 
       {/* Legend */}
       <div className="flex flex-wrap gap-3 pt-2 border-t">
-        {Object.entries(BADGE_CONFIG).map(([key, config]) => (
-          <span key={key} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-            <span className={`h-2 w-2 rounded-full ${config.barColor}`} />
-            {config.emoji} {config.label}
-          </span>
-        ))}
+        {Object.entries(BADGE_CONFIG).map(([key, config]) => {
+          const Icon = config.icon
+          return (
+            <span key={key} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <span className={`h-2 w-2 rounded-full ${config.barColor}`} />
+              <Icon className="h-3 w-3" /> {config.label}
+            </span>
+          )
+        })}
       </div>
     </div>
   )

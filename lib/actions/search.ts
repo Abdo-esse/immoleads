@@ -21,18 +21,27 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
 
   if (!query || query.trim().length < 2) return []
 
-  const q = query.trim()
-  const ilike = `%${q}%`
+  // Sanitize query to prevent PostgREST filter injection (remove delimiters , ( ) \ %)
+  const cleanQ = query.replace(/[,().\\%]/g, ' ').trim()
+  if (cleanQ.length < 2) return []
+
+  const ilike = `%${cleanQ}%`
+
+  let leadsQuery = supabaseAdmin
+    .from('leads')
+    .select('id, name, phone, email, status, city')
+    .eq('agency_id', agencyId)
+    .or(`name.ilike.${ilike},phone.ilike.${ilike},email.ilike.${ilike},city.ilike.${ilike}`)
+    .limit(5)
+
+  // Anti-IDOR: Agents only search their assigned leads
+  if (profile.role !== 'admin') {
+    leadsQuery = leadsQuery.eq('assigned_to', profile.id)
+  }
 
   // Run all 3 searches in parallel
   const [leadsRes, propertiesRes, agentsRes] = await Promise.all([
-    // Search Leads
-    supabaseAdmin
-      .from('leads')
-      .select('id, name, phone, email, status, city')
-      .eq('agency_id', agencyId)
-      .or(`name.ilike.${ilike},phone.ilike.${ilike},email.ilike.${ilike},city.ilike.${ilike}`)
-      .limit(5),
+    leadsQuery,
 
     // Search Properties
     supabaseAdmin
@@ -61,7 +70,7 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
       title: lead.name,
       subtitle: [lead.phone, lead.city, lead.status].filter(Boolean).join(' · '),
       href: `/dashboard/leads/${lead.id}`,
-      icon: '👤',
+      icon: '',
     })
   }
 
@@ -76,7 +85,7 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
       title: prop.title,
       subtitle: [prop.city, prop.quartier, priceStr].filter(Boolean).join(' · '),
       href: `/dashboard/properties/${prop.slug || prop.id}`,
-      icon: '🏠',
+      icon: '',
     })
   }
 
@@ -88,7 +97,7 @@ export async function globalSearch(query: string): Promise<SearchResult[]> {
       title: agent.full_name,
       subtitle: agent.role === 'admin' ? 'Administrateur' : 'Agent',
       href: `/dashboard/settings`,
-      icon: '🧑‍💼',
+      icon: '',
     })
   }
 

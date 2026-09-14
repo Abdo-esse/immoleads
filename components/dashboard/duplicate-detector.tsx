@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, Merge, X, Loader2, Phone, Mail, MapPin, Calendar } from 'lucide-react'
+import { AlertTriangle, Merge, X, Loader2, Phone, Mail, MapPin, Calendar, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import { findDuplicates, mergeLeads, type DuplicateGroup } from '@/lib/actions/deduplication'
 import { timeAgo } from '@/lib/utils'
@@ -40,7 +40,7 @@ export function DuplicateDetector({ onClose }: Props) {
     if (result.error) {
       toast.error(result.error)
     } else {
-      toast.success('Leads fusionnés avec succès ✓')
+      toast.success('Leads fusionnés avec succès')
       await loadDuplicates()
       router.refresh()
     }
@@ -77,7 +77,9 @@ export function DuplicateDetector({ onClose }: Props) {
             </div>
           ) : groups.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-lg font-medium text-emerald-600">✓ Aucun doublon détecté</p>
+              <p className="text-lg font-medium text-emerald-600 flex items-center justify-center gap-1.5">
+                <Check className="h-5 w-5" /> Aucun doublon détecté
+              </p>
               <p className="text-sm text-muted-foreground mt-1">Votre base est propre !</p>
             </div>
           ) : (
@@ -103,8 +105,8 @@ export function DuplicateDetector({ onClose }: Props) {
                         }`}
                       >
                         {li === 0 && (
-                          <span className="text-[10px] font-bold uppercase text-emerald-600 tracking-wider">
-                            ✓ Original
+                          <span className="text-[10px] font-bold uppercase text-emerald-600 tracking-wider flex items-center gap-1">
+                            <Check className="h-3 w-3" /> Original
                           </span>
                         )}
                         <p className="text-sm font-semibold">{lead.name}</p>

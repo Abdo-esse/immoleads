@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Send, MessageSquare, Loader2, ExternalLink, X } from 'lucide-react'
+import { Send, MessageSquare, Loader2, ExternalLink, X, Check, Lightbulb } from 'lucide-react'
 import { toast } from 'sonner'
 import { sendWhatsAppMessage, getWhatsAppMessages, isWhatsAppConfigured } from '@/lib/actions/whatsapp-api'
 import { buildWhatsAppUrl } from '@/lib/utils/whatsapp'
@@ -84,7 +84,7 @@ export function WhatsAppChatPanel({ leadId, leadName, leadPhone, propertyTitle, 
     )
 
     if (result.success) {
-      toast.success('Message envoyé via WhatsApp ✓')
+      toast.success('Message envoyé via WhatsApp')
       setNewMessage('')
       setSelectedTemplate('')
       await loadData()
@@ -149,7 +149,7 @@ export function WhatsAppChatPanel({ leadId, leadName, leadPhone, propertyTitle, 
                     {msg.sender?.full_name || 'Agent'} • {timeAgo(msg.created_at)}
                   </span>
                   {msg.status === 'sent' && (
-                    <span className="text-[10px] text-white/60">✓</span>
+                    <Check className="h-3 w-3 text-white/60" />
                   )}
                 </div>
               </div>
@@ -208,8 +208,8 @@ export function WhatsAppChatPanel({ leadId, leadName, leadPhone, propertyTitle, 
           </button>
         </div>
         {!apiConfigured && (
-          <p className="text-[10px] text-muted-foreground mt-1.5 text-center">
-            💡 Configurez l&apos;API WhatsApp dans <strong>Settings → Intégrations</strong> pour l&apos;envoi direct
+          <p className="text-[10px] text-muted-foreground mt-1.5 text-center flex items-center justify-center gap-1">
+            <Lightbulb className="h-3 w-3 text-amber-500 shrink-0" /> Configurez l&apos;API WhatsApp dans <strong>Settings → Intégrations</strong> pour l&apos;envoi direct
           </p>
         )}
       </div>

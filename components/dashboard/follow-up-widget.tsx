@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Bell, Phone, MessageSquare, AlertTriangle, Flame, Clock, ChevronRight } from 'lucide-react'
+import { Bell, Phone, MessageSquare, AlertTriangle, Flame, Clock, ChevronRight, Sparkles } from 'lucide-react'
 import { getFollowUpReminders, type FollowUpReminder } from '@/lib/actions/follow-up-reminders'
 import { buildWhatsAppUrl } from '@/lib/utils/whatsapp'
 
@@ -87,7 +87,7 @@ export function FollowUpWidget() {
 
       {reminders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-6 text-sm text-muted-foreground">
-          <span className="text-2xl mb-2">🎉</span>
+          <Sparkles className="h-7 w-7 text-emerald-500 mb-2" />
           <p>Aucune relance en attente !</p>
           <p className="text-[10px]">Tous vos leads sont à jour</p>
         </div>

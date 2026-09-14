@@ -129,7 +129,7 @@ export async function triggerFollowUpReminders(agencyId: string): Promise<{ sent
       userId: lead.assigned_to,
       agencyId: agencyId,
       type: 'system',
-      title: `⏰ Relance urgente : ${lead.name}`,
+      title: `Relance urgente : ${lead.name}`,
       message: `Ce lead attend un premier contact depuis ${formatDuration(
         (now.getTime() - new Date(lead.created_at).getTime()) / 60_000
       )}. Contactez-le rapidement !`,
@@ -153,7 +153,7 @@ export async function triggerFollowUpReminders(agencyId: string): Promise<{ sent
       userId: lead.assigned_to,
       agencyId: agencyId,
       type: 'system',
-      title: `📞 Rappel de relance : ${lead.name}`,
+      title: `Rappel de relance : ${lead.name}`,
       message: `La relance prévue est en retard. Pensez à contacter ce lead.`,
       link: `/dashboard/leads/${lead.id}`,
     })

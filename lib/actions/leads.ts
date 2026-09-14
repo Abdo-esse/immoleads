@@ -6,6 +6,7 @@ import { leadSchema, type LeadFormValues } from '@/lib/validators/lead'
 import { requireAuth } from '@/lib/actions/auth'
 import { createNotification } from '@/lib/actions/notifications'
 import { autoAssignLead } from '@/lib/actions/assignment'
+import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import type { LeadWithRelations, Lead } from '@/types'
 
 /**
@@ -13,6 +14,27 @@ import type { LeadWithRelations, Lead } from '@/types'
  * Uses admin client (service-role) to bypass RLS.
  */
 export async function submitPublicLead(values: LeadFormValues) {
+  // 1. In-memory Rate Limiting by IP (max 5 requests per minute)
+  const clientIp = await getClientIp()
+  const rateLimit = checkRateLimit(`public_lead_${clientIp}`, 5, 60 * 1000)
+
+  if (!rateLimit.allowed) {
+    return {
+      error: {
+        _form: [
+          `Trop de demandes. Veuillez patienter ${rateLimit.retryAfterSeconds} secondes avant de réessayer.`,
+        ],
+      },
+    }
+  }
+
+  // 2. Anti-bot Honeypot check (hidden field in frontend)
+  if (values.hp_company_field && values.hp_company_field.trim().length > 0) {
+    console.warn(`[Honeypot Triggered] Spambot detected from IP: ${clientIp}`)
+    // Return fake success so spambots don't adjust their strategy
+    return { success: true }
+  }
+
   const parsed = leadSchema.safeParse(values)
 
   if (!parsed.success) {
@@ -34,10 +56,13 @@ export async function submitPublicLead(values: LeadFormValues) {
     assignedTo = property?.assigned_agent_id ?? null
   }
 
+  // Omit honeypot field from DB payload
+  const { hp_company_field, ...dbPayload } = parsed.data
+
   const { data, error } = await supabase
     .from('leads')
     .insert({
-      ...parsed.data,
+      ...dbPayload,
       assigned_to: assignedTo,
       status: 'NEW',
     })
@@ -124,7 +149,7 @@ export async function getLeads(): Promise<LeadWithRelations[]> {
 export async function getLeadById(id: string): Promise<LeadWithRelations | null> {
   const { profile } = await requireAuth()
 
-  const { data, error } = await supabaseAdmin
+  let query = supabaseAdmin
     .from('leads')
     .select(`
       *,
@@ -133,7 +158,13 @@ export async function getLeadById(id: string): Promise<LeadWithRelations | null>
     `)
     .eq('id', id)
     .eq('agency_id', profile.agency_id)
-    .single()
+
+  // Anti-IDOR: Agents can only view leads assigned to them; admins see all
+  if (profile.role !== 'admin') {
+    query = query.eq('assigned_to', profile.id)
+  }
+
+  const { data, error } = await query.single()
 
   if (error) return null
   return data as unknown as LeadWithRelations
@@ -157,11 +188,18 @@ export async function updateLeadStatus(id: string, status: string, lost_reason?:
     updateData.last_contacted_at = new Date().toISOString()
   }
 
-  const { error } = await supabaseAdmin
+  let updateQuery = supabaseAdmin
     .from('leads')
     .update(updateData)
     .eq('id', id)
     .eq('agency_id', profile.agency_id)
+
+  // Anti-IDOR: Agents can only update leads assigned to them
+  if (profile.role !== 'admin') {
+    updateQuery = updateQuery.eq('assigned_to', profile.id)
+  }
+
+  const { error } = await updateQuery
 
   if (error) return { error: error.message }
 
@@ -184,6 +222,11 @@ export async function updateLeadStatus(id: string, status: string, lost_reason?:
  */
 export async function assignLead(leadId: string, agentId: string) {
   const { profile } = await requireAuth()
+
+  // Anti-IDOR: Only admins can assign / reassign leads
+  if (profile.role !== 'admin') {
+    return { error: 'Seuls les administrateurs peuvent réassigner des leads.' }
+  }
 
   const { error } = await supabaseAdmin
     .from('leads')
@@ -307,6 +350,20 @@ export async function getFollowUpsList(): Promise<{
 export async function addLeadNote(leadId: string, content: string) {
   const { profile } = await requireAuth()
 
+  // Anti-IDOR: Verify lead access
+  const { data: lead } = await supabaseAdmin
+    .from('leads')
+    .select('id, agency_id, assigned_to')
+    .eq('id', leadId)
+    .single()
+
+  if (!lead || lead.agency_id !== profile.agency_id) {
+    return { error: 'Lead introuvable.' }
+  }
+  if (profile.role !== 'admin' && lead.assigned_to !== profile.id) {
+    return { error: 'Accès refusé : ce lead ne vous est pas assigné.' }
+  }
+
   const { error } = await supabaseAdmin.from('lead_notes').insert({
     lead_id: leadId,
     author_id: profile.id,
@@ -330,7 +387,16 @@ export async function addLeadNote(leadId: string, content: string) {
  * Get notes for a lead.
  */
 export async function getLeadNotes(leadId: string) {
-  await requireAuth()
+  const { profile } = await requireAuth()
+
+  const { data: lead } = await supabaseAdmin
+    .from('leads')
+    .select('id, agency_id, assigned_to')
+    .eq('id', leadId)
+    .single()
+
+  if (!lead || lead.agency_id !== profile.agency_id) return []
+  if (profile.role !== 'admin' && lead.assigned_to !== profile.id) return []
 
   const { data, error } = await supabaseAdmin
     .from('lead_notes')
@@ -349,7 +415,16 @@ export async function getLeadNotes(leadId: string) {
  * Get activities for a lead.
  */
 export async function getLeadActivities(leadId: string) {
-  await requireAuth()
+  const { profile } = await requireAuth()
+
+  const { data: lead } = await supabaseAdmin
+    .from('leads')
+    .select('id, agency_id, assigned_to')
+    .eq('id', leadId)
+    .single()
+
+  if (!lead || lead.agency_id !== profile.agency_id) return []
+  if (profile.role !== 'admin' && lead.assigned_to !== profile.id) return []
 
   const { data, error } = await supabaseAdmin
     .from('lead_activities')

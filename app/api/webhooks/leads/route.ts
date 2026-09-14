@@ -3,7 +3,6 @@ import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createNotification } from '@/lib/actions/notifications'
 import { autoAssignLead } from '@/lib/actions/assignment'
 
-const WEBHOOK_SECRET = process.env.LEADS_WEBHOOK_SECRET || 'immoleads_secret_webhook_key'
 
 /**
  * GET /api/webhooks/leads
@@ -38,9 +37,21 @@ export async function GET() {
  */
 export async function POST(req: NextRequest) {
   try {
-    // 1. Check optional secret token if configured
-    const incomingSecret = req.headers.get('x-webhook-secret') || req.nextUrl.searchParams.get('token')
-    if (process.env.LEADS_WEBHOOK_SECRET && incomingSecret !== process.env.LEADS_WEBHOOK_SECRET) {
+    // 1. Mandatory secret token validation
+    const expectedSecret = process.env.LEADS_WEBHOOK_SECRET
+    if (!expectedSecret) {
+      console.error('[Webhook Security] LEADS_WEBHOOK_SECRET is not configured on the server.')
+      return NextResponse.json(
+        { error: 'Erreur de configuration serveur: LEADS_WEBHOOK_SECRET non configuré' },
+        { status: 500 }
+      )
+    }
+
+    const authHeader = req.headers.get('authorization')
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null
+    const incomingSecret = req.headers.get('x-webhook-secret') || bearerToken
+
+    if (!incomingSecret || incomingSecret !== expectedSecret) {
       return NextResponse.json(
         { error: 'Accès non autorisé: token secret invalide' },
         { status: 401 }
@@ -72,9 +83,22 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 3. Resolve target agency_id
+    // 3. Resolve and validate target agency_id
     let resolvedAgencyId = agency_id
-    if (!resolvedAgencyId) {
+    if (resolvedAgencyId) {
+      const { data: existingAgency } = await supabaseAdmin
+        .from('agencies')
+        .select('id')
+        .eq('id', resolvedAgencyId)
+        .maybeSingle()
+
+      if (!existingAgency) {
+        return NextResponse.json(
+          { error: 'Agence spécifiée introuvable' },
+          { status: 400 }
+        )
+      }
+    } else {
       const { data: agency, error: agencyError } = await supabaseAdmin
         .from('agencies')
         .select('id')

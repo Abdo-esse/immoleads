@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
+  Building2,
 } from 'lucide-react'
 import type { VisitWithRelations } from '@/types'
 
@@ -315,8 +316,8 @@ export function VisitsCalendar({ visits }: Props) {
                       </div>
                       <p className="text-[10px] font-medium truncate">{(v as any).lead?.name || 'Lead'}</p>
                       {(v as any).property?.title && (
-                        <p className="text-[9px] text-muted-foreground truncate mt-0.5">
-                          🏠 {(v as any).property.title}
+                        <p className="text-[9px] text-muted-foreground truncate mt-0.5 flex items-center">
+                          <Building2 className="h-2.5 w-2.5 inline shrink-0 mr-0.5" /> {(v as any).property.title}
                         </p>
                       )}
                     </Link>

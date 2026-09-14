@@ -143,7 +143,7 @@ function GoalCard({
 
         <div className="flex items-center justify-between text-[10px]">
           <span className="text-muted-foreground">
-            {isComplete ? '🎉 Objectif atteint !' : `${percentage}% complété`}
+            {isComplete ? 'Objectif atteint !' : `${percentage}% complété`}
           </span>
           {!isComplete && (
             <span className="text-muted-foreground">

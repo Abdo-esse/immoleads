@@ -35,6 +35,7 @@ export function LeadFormSection({ propertyId, agencyId, propertyTitle }: Props) 
       property_id: propertyId,
       agency_id: agencyId,
       source: 'website',
+      hp_company_field: (form.get('hp_company_field') as string) || undefined,
     })
 
     setLoading(false)
@@ -77,6 +78,16 @@ export function LeadFormSection({ propertyId, agencyId, propertyTitle }: Props) 
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Anti-bot Honeypot field (hidden from humans) */}
+        <div style={{ display: 'none' }} aria-hidden="true">
+          <input
+            name="hp_company_field"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+          />
+        </div>
+
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Nom complet *</label>
