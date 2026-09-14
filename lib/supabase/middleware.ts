@@ -39,11 +39,16 @@ export async function updateSession(request: NextRequest) {
   // 2. On slow connections, this call can fail/timeout, returning null
   // 3. That causes false redirects to /login, creating redirect loops
   // The session cookie was already validated by createServerClient above.
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  let user = null
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+    user = session?.user ?? null
+  } catch {
+    user = null
+  }
 
-  const user = session?.user ?? null
   const { pathname } = request.nextUrl
 
   // Skip auth redirect for internal Next.js requests (RSC payloads, prefetch, segment fetches)
