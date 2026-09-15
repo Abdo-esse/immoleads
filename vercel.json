@@ -1,8 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/cron/follow-ups?secret=${CRON_SECRET}",
-      "schedule": "*/15 * * * *"
+      "path": "/api/cron/follow-ups",
+      "schedule": "0 8 * * *"
     }
   ],
   "headers": [

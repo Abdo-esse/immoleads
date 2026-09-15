@@ -113,16 +113,16 @@ export function AgencyModal({ isOpen, onClose, onSuccess }: AgencyModalProps) {
       )
 
       if (!res.success) {
-        setError(res.error || "Erreur lors de la création de l'agence.")
+        setError((res as any).error || "Erreur lors de la création de l'agence.")
         return
       }
 
       setCreationResult({
         success: true,
         agencyName: res.agency?.name || agencyName,
-        invitedViaEmail: res.invitedViaEmail,
-        temporaryPassword: res.temporaryPassword,
-        adminEmail: res.adminUser?.email || adminEmail,
+        invitedViaEmail: res.adminResult?.invitedViaEmail,
+        temporaryPassword: res.adminResult?.temporaryPassword ?? undefined,
+        adminEmail: adminEmail,
       })
 
       router.refresh()

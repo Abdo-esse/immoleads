@@ -8,7 +8,7 @@ export type NotificationType = 'lead_created' | 'lead_assigned' | 'visit_schedul
 
 export interface NotificationItem {
   id: string
-  agency_id: string
+  agency_id: string | null
   user_id: string | null
   title: string
   message: string
@@ -173,13 +173,14 @@ export async function markAllNotificationsAsRead() {
  * Called from server actions (new lead, new visit, assignment, webhook).
  */
 export async function createNotification(params: {
-  agencyId: string
+  agencyId: string | null | undefined
   userId?: string | null
   title: string
   message: string
   type: NotificationType
   link?: string | null
 }) {
+  if (!params.agencyId) return { success: false }
   try {
     const { data, error } = await supabaseAdmin
       .from('notifications')

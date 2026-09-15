@@ -136,6 +136,24 @@ export async function getAllAgencies(): Promise<AgencyWithCounts[]> {
   }))
 }
 
+export type CreateAgencyResult =
+  | {
+      success: true
+      agency: any
+      adminResult: {
+        invitedViaEmail?: boolean
+        temporaryPassword?: string | null
+        error?: string
+      } | null
+      error?: undefined
+    }
+  | {
+      success: false
+      error: string
+      agency?: undefined
+      adminResult?: undefined
+    }
+
 /**
  * Create a new agency and optionally configure its primary administrator.
  */
@@ -153,7 +171,7 @@ export async function createAgencyWithAdmin(
     password?: string
     sendEmailInvite?: boolean
   }
-) {
+): Promise<CreateAgencyResult> {
   await requireSuperAdmin()
 
   const name = agencyData.name.trim()

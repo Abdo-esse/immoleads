@@ -97,7 +97,7 @@ export function DemoConversionModal({
       )
 
       if (!res.success) {
-        setError(res.error || "Erreur lors de la conversion de la demande en agence.")
+        setError((res as any).error || "Erreur lors de la conversion de la demande en agence.")
         return
       }
 
