@@ -4,48 +4,42 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { cn } from 'cn'
-import { signOut, getCurrentProfile } from '@/lib/actions/auth'
+import { signOut } from '@/lib/actions/auth'
 import type { Profile } from '@/types'
 import {
   LayoutDashboard,
-  Users,
   Building2,
-  CalendarCheck,
-  PhoneCall,
-  BarChart3,
-  Settings,
+  Users,
+  Inbox,
+  Shield,
+  ArrowLeftRight,
   LogOut,
-  Kanban,
   Menu,
   X,
   Moon,
   Sun,
   Search,
-  Shield,
   Loader2,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import { NotificationsBell } from '@/components/dashboard/notifications-bell'
-import { CommandPalette } from '@/components/dashboard/command-palette'
-import { MobileBottomNav } from '@/components/dashboard/mobile-bottom-nav'
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/leads', label: 'Leads', icon: Users },
-  { href: '/dashboard/leads/pipeline', label: 'Pipeline', icon: Kanban },
-  { href: '/dashboard/properties', label: 'Properties', icon: Building2 },
-  { href: '/dashboard/visits', label: 'Visits', icon: CalendarCheck },
-  { href: '/dashboard/follow-ups', label: 'Follow-ups', icon: PhoneCall },
-  { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
-]
+interface AdminShellProps {
+  children: React.ReactNode
+  pendingCount?: number
+  profile?: Profile | null
+  userEmail?: string
+}
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export function AdminShell({
+  children,
+  pendingCount = 0,
+  profile,
+  userEmail = '',
+}: AdminShellProps) {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const [currentProfile, setCurrentProfile] = useState<Profile | null>(null)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const handleSignOut = async (e: React.FormEvent) => {
@@ -64,11 +58,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     setMounted(true)
-    getCurrentProfile().then(setCurrentProfile).catch(() => {})
   }, [])
 
+  const navItems = [
+    {
+      href: '/admin',
+      label: "Vue d'ensemble",
+      icon: LayoutDashboard,
+      exact: true,
+    },
+    {
+      href: '/admin/agencies',
+      label: 'Agences',
+      icon: Building2,
+      exact: false,
+    },
+    {
+      href: '/admin/users',
+      label: 'Utilisateurs',
+      icon: Users,
+      exact: false,
+    },
+    {
+      href: '/admin/demo-requests',
+      label: 'Demandes de Démo',
+      icon: Inbox,
+      exact: false,
+      badge: pendingCount > 0 ? pendingCount : null,
+    },
+  ]
+
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-background text-foreground">
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
@@ -87,12 +108,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         {/* Sidebar Header */}
         <div className="flex h-16 items-center justify-between border-b px-5">
-          <Link href="/dashboard" prefetch={false} className="flex items-center gap-2.5">
+          <Link href="/admin" prefetch={false} className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Building2 className="h-4 w-4 text-primary-foreground" />
+              <Shield className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="text-base font-bold tracking-tight">
-              Immo<span className="text-primary">Leads</span>
+              ATLORYX <span className="text-primary">Admin</span>
             </span>
           </Link>
           <button
@@ -106,10 +127,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           {navItems.map((item) => {
-            const isActive =
-              item.href === '/dashboard'
-                ? pathname === '/dashboard'
-                : pathname.startsWith(item.href)
+            const isActive = item.exact
+              ? pathname === item.href
+              : pathname.startsWith(item.href)
+
             return (
               <Link
                 key={item.href}
@@ -117,41 +138,48 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 prefetch={false}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                  'flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                   isActive
                     ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                     : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
                 )}
               >
-                <item.icon className="h-4 w-4 shrink-0" />
-                {item.label}
+                <div className="flex items-center gap-3">
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  <span>{item.label}</span>
+                </div>
+                {item.badge !== undefined && item.badge !== null && item.badge > 0 && (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             )
           })}
 
-          {/* Espace SuperAdmin link si rôle superadmin */}
-          {currentProfile?.role === 'superadmin' && (
-            <div className="pt-2 pb-1">
-              <Link
-                href="/admin"
-                prefetch={false}
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors border border-primary/20 shadow-xs"
-              >
-                <Shield className="h-4 w-4 shrink-0 text-primary" />
-                <div className="flex flex-col">
-                  <span className="font-semibold">Espace SuperAdmin</span>
-                  <span className="text-[10px] text-muted-foreground font-normal">Gestion multi-agences</span>
-                </div>
-              </Link>
-            </div>
-          )}
-
-          {/* Séparateur discret sous Settings */}
           <div className="pt-2 pb-1">
             <div className="h-px bg-border/60" />
           </div>
 
-          {/* Theme Toggle placé directement sous Settings */}
+          {/* Switch to Agency CRM Dashboard */}
+          <Link
+            href="/dashboard"
+            prefetch={false}
+            onClick={() => setSidebarOpen(false)}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+          >
+            <ArrowLeftRight className="h-4 w-4 shrink-0 text-primary" />
+            <div className="flex flex-col">
+              <span>Espace Agence CRM</span>
+              <span className="text-[10px] text-muted-foreground font-normal">Vue locale agence</span>
+            </div>
+          </Link>
+
+          <div className="pt-2 pb-1">
+            <div className="h-px bg-border/60" />
+          </div>
+
+          {/* Theme Toggle */}
           {mounted && (
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -166,7 +194,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </button>
           )}
 
-          {/* Logout placé immédiatement sous Settings sans scroller */}
+          {/* Logout */}
           <form onSubmit={handleSignOut}>
             <button
               type="submit"
@@ -199,45 +227,41 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           >
             <Menu className="h-5 w-5" />
           </button>
-          {/* Search shortcut */}
-          <button
-            onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
-            className="hidden sm:flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            <Search className="h-3.5 w-3.5" />
-            <span>Rechercher...</span>
-            <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px]">Ctrl+K</kbd>
-          </button>
+
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary border border-primary/20">
+              <Shield className="h-3.5 w-3.5" />
+              SuperAdmin Global
+            </span>
+          </div>
+
           <div className="flex-1" />
+
           <div className="flex items-center gap-3">
-            <NotificationsBell />
+            <Link
+              href="/dashboard"
+              prefetch={false}
+              className="hidden sm:flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            >
+              <ArrowLeftRight className="h-3.5 w-3.5 text-primary" />
+              <span>Accéder au CRM</span>
+            </Link>
+
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium">ImmoMaroc Agency</p>
-              <p className="text-xs text-muted-foreground">CRM Dashboard</p>
+              <p className="text-sm font-medium">{profile?.full_name || 'Super Admin'}</p>
+              <p className="text-xs text-muted-foreground">{userEmail || 'superadmin@atloryx.com'}</p>
             </div>
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-              IM
+              {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : 'SA'}
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 px-4 pt-4 pb-12 sm:px-6 sm:pt-6 lg:pb-8">
+        <main className="flex-1 px-4 pt-4 pb-12 sm:px-6 sm:pt-6 lg:pb-8 max-w-7xl w-full mx-auto">
           {children}
-          {/* Espace réservé garanti à la fin du scroll pour la bottom nav sur mobile */}
-          <div
-            style={{ height: '120px', minHeight: '120px', width: '100%' }}
-            className="lg:hidden shrink-0"
-            aria-hidden="true"
-          />
         </main>
       </div>
-
-      {/* Mobile Bottom Navigation */}
-      <MobileBottomNav />
-
-      {/* Global Command Palette */}
-      <CommandPalette />
     </div>
   )
 }

@@ -39,8 +39,22 @@ export default function SetPasswordPage() {
       } else {
         setDone(true)
         toast.success('Mot de passe défini avec succès !')
+
+        const { data: { user: currentUser } } = await supabase.auth.getUser()
+        let target = '/dashboard'
+        if (currentUser) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', currentUser.id)
+            .single()
+          if (profile?.role === 'superadmin') {
+            target = '/admin'
+          }
+        }
+
         setTimeout(() => {
-          router.push('/dashboard')
+          router.push(target)
         }, 1500)
       }
     } catch (err: any) {

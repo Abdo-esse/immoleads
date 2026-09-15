@@ -69,31 +69,31 @@ export interface Database {
       profiles: {
         Row: {
           id: string
-          agency_id: string
+          agency_id: string | null
           full_name: string
           email: string
           phone: string | null
-          role: 'admin' | 'agent'
+          role: 'superadmin' | 'admin' | 'agent'
           avatar_url: string | null
           created_at: string
         }
         Insert: {
           id: string
-          agency_id: string
+          agency_id?: string | null
           full_name: string
           email: string
           phone?: string | null
-          role?: 'admin' | 'agent'
+          role?: 'superadmin' | 'admin' | 'agent'
           avatar_url?: string | null
           created_at?: string
         }
         Update: {
           id?: string
-          agency_id?: string
+          agency_id?: string | null
           full_name?: string
           email?: string
           phone?: string | null
-          role?: 'admin' | 'agent'
+          role?: 'superadmin' | 'admin' | 'agent'
           avatar_url?: string | null
           created_at?: string
         }
@@ -385,6 +385,57 @@ export interface Database {
             referencedColumns: ["id"]
           }
         ]
+      }
+      demo_requests: {
+        Row: {
+          id: string
+          full_name: string
+          phone: string
+          agency_name: string | null
+          city: string
+          team_size: string | null
+          lead_sources: string[] | null
+          monthly_leads: string | null
+          main_problem: string | null
+          status: 'NEW' | 'CONTACTED' | 'CONVERTED' | 'ARCHIVED'
+          notes: string | null
+          agency_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          full_name: string
+          phone: string
+          agency_name?: string | null
+          city: string
+          team_size?: string | null
+          lead_sources?: string[] | null
+          monthly_leads?: string | null
+          main_problem?: string | null
+          status?: 'NEW' | 'CONTACTED' | 'CONVERTED' | 'ARCHIVED'
+          notes?: string | null
+          agency_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          full_name?: string
+          phone?: string
+          agency_name?: string | null
+          city?: string
+          team_size?: string | null
+          lead_sources?: string[] | null
+          monthly_leads?: string | null
+          main_problem?: string | null
+          status?: 'NEW' | 'CONTACTED' | 'CONVERTED' | 'ARCHIVED'
+          notes?: string | null
+          agency_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {

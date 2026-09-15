@@ -29,6 +29,10 @@ export type VisitUpdate = Database['public']['Tables']['visits']['Update']
 export type LeadActivity = Database['public']['Tables']['lead_activities']['Row']
 export type LeadActivityInsert = Database['public']['Tables']['lead_activities']['Insert']
 
+export type DemoRequest = Database['public']['Tables']['demo_requests']['Row']
+export type DemoRequestInsert = Database['public']['Tables']['demo_requests']['Insert']
+export type DemoRequestUpdate = Database['public']['Tables']['demo_requests']['Update']
+
 // ═══════════════════════════════════════════
 // Enum Types
 // ═══════════════════════════════════════════
@@ -39,6 +43,7 @@ export type PropertyStatus = Property['status']
 export type TransactionType = Property['transaction_type']
 export type VisitStatus = Visit['status']
 export type UserRole = Profile['role']
+export type DemoRequestStatus = DemoRequest['status']
 export type LeadTimeline = NonNullable<Lead['timeline']>
 export type LeadSource = NonNullable<Lead['source']>
 

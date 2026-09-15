@@ -19,13 +19,27 @@ export async function signIn(formData: FormData) {
 
   const supabase = await createClient()
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   })
 
   if (error) {
     return { error: error.message }
+  }
+
+  // Fetch the user's role to determine the correct landing page
+  let userRole = 'agent'
+  if (data?.user?.id) {
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user.id)
+      .single()
+
+    if (profile?.role) {
+      userRole = profile.role
+    }
   }
 
   const rawRedirect = formData.get('redirect')
@@ -38,7 +52,28 @@ export async function signIn(formData: FormData) {
     !redirectTo.includes('\\') &&
     !redirectTo.includes('://')
 
-  redirect(isSafeRedirect ? redirectTo : '/dashboard')
+  let destination = userRole === 'superadmin' ? '/admin' : '/dashboard'
+
+  if (isSafeRedirect) {
+    if (userRole === 'superadmin') {
+      if (redirectTo.startsWith('/admin')) {
+        destination = redirectTo
+      } else if (redirectTo !== '/dashboard') {
+        destination = redirectTo
+      } else {
+        destination = '/admin'
+      }
+    } else {
+      // Non-superadmin users should not be redirected to /admin
+      if (redirectTo.startsWith('/admin')) {
+        destination = '/dashboard'
+      } else {
+        destination = redirectTo
+      }
+    }
+  }
+
+  redirect(destination)
 }
 
 /**
@@ -121,7 +156,7 @@ export async function requireAuth(): Promise<{
 }
 
 /**
- * Require admin role. Redirects to /dashboard if the user is not an admin.
+ * Require admin or superadmin role. Redirects to /dashboard if the user is not an admin.
  */
 export async function requireAdmin(): Promise<{
   user: { id: string; email: string }
@@ -129,9 +164,26 @@ export async function requireAdmin(): Promise<{
 }> {
   const result = await requireAuth()
 
-  if (result.profile.role !== 'admin') {
+  if (result.profile.role !== 'admin' && result.profile.role !== 'superadmin') {
     redirect('/dashboard')
   }
 
   return result
 }
+
+/**
+ * Require superadmin role. Redirects to /dashboard if the user is not a superadmin.
+ */
+export async function requireSuperAdmin(): Promise<{
+  user: { id: string; email: string }
+  profile: Profile
+}> {
+  const result = await requireAuth()
+
+  if (result.profile.role !== 'superadmin') {
+    redirect('/dashboard')
+  }
+
+  return result
+}
+

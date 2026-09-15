@@ -65,17 +65,28 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.searchParams.has('_rsc')
 
   // Protected routes: redirect to /login only on full, direct document navigations
-  if (pathname.startsWith('/dashboard') && !user && !isInternal) {
+  if ((pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) && !user && !isInternal) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirect', pathname)
     console.log(`[Middleware] Redirecting ${pathname} → /login (no user)`)
     return NextResponse.redirect(loginUrl)
   }
 
-  // If already logged in, redirect away from /login to requested destination or /dashboard
+  // If already logged in, redirect away from /login to requested destination or role-based default
   if (pathname === '/login' && user) {
     const redirectParam = request.nextUrl.searchParams.get('redirect')
-    const target = redirectParam && redirectParam.startsWith('/dashboard') ? redirectParam : '/dashboard'
+    const isSuperAdmin = user.user_metadata?.role === 'superadmin'
+    const defaultTarget = isSuperAdmin ? '/admin' : '/dashboard'
+
+    let target = defaultTarget
+    if (redirectParam && (redirectParam.startsWith('/dashboard') || redirectParam.startsWith('/admin'))) {
+      if (redirectParam.startsWith('/admin') && !isSuperAdmin) {
+        target = '/dashboard'
+      } else {
+        target = redirectParam
+      }
+    }
+
     return NextResponse.redirect(new URL(target, request.url))
   }
 
