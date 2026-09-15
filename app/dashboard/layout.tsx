@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { cn } from 'cn'
@@ -88,12 +89,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Sidebar Header */}
         <div className="flex h-16 items-center justify-between border-b px-5">
           <Link href="/dashboard" prefetch={false} className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Building2 className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="text-base font-bold tracking-tight">
-              Immo<span className="text-primary">Leads</span>
-            </span>
+            <Image
+              src="/images/logo/logo.png"
+              alt="ATLORYX ImmoLeads"
+              width={100}
+              height={46}
+              className="h-20 w-auto object-contain"
+              priority
+            />
           </Link>
           <button
             className="rounded-md p-1 hover:bg-sidebar-accent lg:hidden"

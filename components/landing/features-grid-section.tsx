@@ -1,4 +1,4 @@
-import { Home, Target, MessageSquare, Users, BellRing, Calendar, Shield, Sparkles, Check } from 'lucide-react'
+import { Home, Target, MessageSquare, Users, BellRing, Calendar, Shield, Sparkles, Check, Upload, Link2, ShieldCheck } from 'lucide-react'
 
 export function FeaturesGridSection() {
   const mainFeatures = [
@@ -38,6 +38,24 @@ export function FeaturesGridSection() {
       desc: 'Transformez un prospect qualifié en visite planifiée directement dans l’agenda de vos agents avec rappels automatiques.',
       color: '#16A34A',
     },
+    {
+      icon: Upload,
+      title: 'Import CSV / Excel',
+      desc: 'Importez vos contacts existants en masse depuis un fichier. Migration simple et rapide vers ImmoLeads sans ressaisie.',
+      color: '#06B6D4',
+    },
+    {
+      icon: Link2,
+      title: 'Matching lead ↔ bien',
+      desc: 'Suggestion automatique des biens correspondant au profil du prospect (ville, budget, type) pour accélérer la conversion.',
+      color: '#EC4899',
+    },
+    {
+      icon: ShieldCheck,
+      title: 'Détection de doublons',
+      desc: 'Identifiez automatiquement les prospects en double par téléphone ou email et fusionnez les fiches pour éviter la confusion.',
+      color: '#EF4444',
+    },
   ]
 
   const secondaryTags = [
@@ -47,7 +65,9 @@ export function FeaturesGridSection() {
     'Gestion complète du catalogue de biens',
     'Rôles Multi-agents & Administrateur',
     'Dashboard en temps réel',
-    'Export et sauvegarde sécurisée',
+    'Notifications instantanées',
+    'Recherche globale Ctrl+K',
+    'Application mobile PWA',
   ]
 
   return (
@@ -68,8 +88,8 @@ export function FeaturesGridSection() {
           </p>
         </div>
 
-        {/* 3x2 Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        {/* 3x3 Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12">
           {mainFeatures.map((feat, idx) => {
             const Icon = feat.icon
             return (

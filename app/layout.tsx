@@ -38,8 +38,11 @@ export const metadata: Metadata = {
     title: 'ImmoLeads',
   },
   icons: {
-    icon: '/icons/icon-192.png',
-    apple: '/icons/icon-192.png',
+    icon: [
+      { url: '/images/logo/favicon.png', type: 'image/png' },
+    ],
+    shortcut: '/images/logo/favicon.png',
+    apple: '/images/logo/favicon.png',
   },
 }
 

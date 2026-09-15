@@ -125,7 +125,7 @@ export function HeroSection() {
                   </div>
 
                   {/* 4 Stats Cards */}
-                  <div className="grid grid-cols-4 gap-2 mb-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 mb-3">
                     <div className="p-2 rounded-lg bg-[#F8FAFC] dark:bg-[#132B3A] border border-[#E2E8F0] dark:border-[#213A49]">
                       <div className="text-[10px] text-[#64748B] font-medium">Nouveaux</div>
                       <div className="text-sm sm:text-base font-bold text-[#3B82F6]">128</div>
@@ -154,7 +154,7 @@ export function HeroSection() {
                       <span>Pipeline d'acquisition</span>
                       <span className="text-[10px] text-[#58B52A]">Flux continu</span>
                     </div>
-                    <div className="flex items-center gap-1 text-[9px] font-semibold">
+                    <div className="flex items-center gap-1 text-[9px] font-semibold overflow-x-auto">
                       <div className="flex-1 py-1 rounded text-center bg-[#3B82F6]/15 text-[#2563EB] border border-[#3B82F6]/30">Nouveau (32)</div>
                       <div className="flex-1 py-1 rounded text-center bg-[#06B6D4]/15 text-[#0891B2] border border-[#06B6D4]/30">Contacté (28)</div>
                       <div className="flex-1 py-1 rounded text-center bg-[#58B52A]/15 text-[#2E7D17] border border-[#58B52A]/30">Qualifié (19)</div>
@@ -166,7 +166,7 @@ export function HeroSection() {
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-[10px] font-bold text-[#64748B] uppercase px-1">
                       <span>Prospect récent</span>
-                      <span>Bien / Intention</span>
+                      <span className="hidden sm:inline">Bien / Intention</span>
                       <span>Action requise</span>
                     </div>
 
@@ -181,7 +181,7 @@ export function HeroSection() {
                           <div className="text-[9px] text-[#64748B]">Meta Ads • Il y a 12 min</div>
                         </div>
                       </div>
-                      <div className="text-[10px]">
+                      <div className="text-[10px] hidden sm:block">
                         <span className="font-medium">Appart T3 Guéliz</span>
                         <span className="block text-[9px] text-[#58B52A]">1.8M DH</span>
                       </div>
@@ -201,7 +201,7 @@ export function HeroSection() {
                           <div className="text-[9px] text-[#64748B]">WhatsApp • Il y a 34 min</div>
                         </div>
                       </div>
-                      <div className="text-[10px]">
+                      <div className="text-[10px] hidden sm:block">
                         <span className="font-medium">Villa Route Casa</span>
                         <span className="block text-[9px] text-[#58B52A]">3.5M DH</span>
                       </div>
@@ -219,7 +219,7 @@ export function HeroSection() {
               </div>
 
               {/* Overlapping Smartphone frame with real WhatsApp chat */}
-              <div className="absolute -bottom-8 -right-4 sm:-right-6 w-56 sm:w-64 rounded-3xl bg-[#0F2A3D] p-2.5 shadow-2xl border-2 border-[#213A49] z-10 backdrop-blur-md">
+              <div className="hidden sm:block absolute -bottom-8 -right-4 sm:-right-6 w-56 sm:w-64 rounded-3xl bg-[#0F2A3D] p-2.5 shadow-2xl border-2 border-[#213A49] z-10 backdrop-blur-md">
 
                 {/* Phone speaker notch */}
                 <div className="mx-auto w-16 h-3 bg-[#07131D] rounded-full mb-2 flex items-center justify-center">

@@ -27,6 +27,11 @@ export async function GET() {
       source: 'FACEBOOK_ADS', // FACEBOOK_ADS | GOOGLE_ADS | AVITO | MUBAWAB | WEBSITE | OTHER
       notes: 'Intéressé par un appartement 3 pièces à Maarif',
       agency_id: '<optional_agency_uuid>',
+      utm_source: 'facebook',
+      utm_medium: 'paid',
+      utm_campaign: 'gueliz_t3_sept2026',
+      utm_content: 'carousel_photos',
+      utm_term: 'appartement marrakech',
     },
   })
 }
@@ -67,7 +72,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { name, phone, email, city, budget, source, notes, agency_id, property_id } = body
+    const { name, phone, email, city, budget, source, notes, agency_id, property_id, utm_source, utm_medium, utm_campaign, utm_content, utm_term } = body
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json(
@@ -126,6 +131,21 @@ export async function POST(req: NextRequest) {
       if (!isNaN(num)) parsedBudget = num
     }
 
+    // Build notes with UTM tracking data appended
+    const utmParts: string[] = []
+    if (utm_source) utmParts.push(`utm_source=${String(utm_source).trim()}`)
+    if (utm_medium) utmParts.push(`utm_medium=${String(utm_medium).trim()}`)
+    if (utm_campaign) utmParts.push(`utm_campaign=${String(utm_campaign).trim()}`)
+    if (utm_content) utmParts.push(`utm_content=${String(utm_content).trim()}`)
+    if (utm_term) utmParts.push(`utm_term=${String(utm_term).trim()}`)
+
+    let finalNotes = notes ? notes.trim() : ''
+    if (utmParts.length > 0) {
+      finalNotes = finalNotes
+        ? `${finalNotes} | [UTM: ${utmParts.join(', ')}]`
+        : `[UTM: ${utmParts.join(', ')}]`
+    }
+
     // 4. Insert lead using admin client
     const { data: lead, error: insertError } = await supabaseAdmin
       .from('leads')
@@ -137,7 +157,7 @@ export async function POST(req: NextRequest) {
         city: city ? city.trim() : null,
         budget: parsedBudget,
         source: normalizedSource,
-        notes: notes ? notes.trim() : null,
+        notes: finalNotes || null,
         status: 'NEW',
         property_id: property_id || null,
       })
