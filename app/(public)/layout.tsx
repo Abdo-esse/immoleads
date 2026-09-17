@@ -116,7 +116,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                 </li>
                 <li>
                   <a
-                    href="https://wa.me/212688062883"
+                    href="https://wa.me/212669808310"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-[#58B52A] hover:underline flex items-center gap-1 font-bold"
@@ -157,7 +157,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <span className="hover:text-white transition-colors cursor-pointer">Confidentialité</span>
               <span className="hover:text-white transition-colors cursor-pointer">Conditions</span>
               <a
-                href="https://wa.me/212688062883"
+                href="https://wa.me/212669808310"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white transition-colors"

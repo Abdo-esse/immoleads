@@ -4,7 +4,7 @@ import { MessageSquare, ArrowRight } from 'lucide-react'
 
 export function WhatsappStickyBar() {
   const whatsappUrl =
-    'https://wa.me/212688062883?text=Bonjour%20ATLORYX,%20je%20souhaite%20d%C3%A9couvrir%20ImmoLeads%20pour%20mon%20agence%20immobili%C3%A8re.'
+    'https://wa.me/212669808310?text=Bonjour%20ATLORYX,%20je%20souhaite%20d%C3%A9couvrir%20ImmoLeads%20pour%20mon%20agence%20immobili%C3%A8re.'
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 p-3 bg-white/95 dark:bg-[#07131D]/95 backdrop-blur-md border-t border-[#E2E8F0] dark:border-[#193646] sm:hidden shadow-2xl">
