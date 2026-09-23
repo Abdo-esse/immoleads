@@ -152,6 +152,6 @@ export async function getAppBaseUrl(): Promise<string> {
     return url.replace(/\/$/, '')
   }
 
-  return 'http://localhost:3000'
+  return 'https://immoleads-umber.vercel.app'
 }
 
