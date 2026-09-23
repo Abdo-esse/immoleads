@@ -112,22 +112,7 @@ export function timeAgo(date: string | Date): string {
  * Prioritizes NEXT_PUBLIC_APP_URL, VERCEL_URL, request headers, then localhost fallback.
  */
 export async function getAppBaseUrl(): Promise<string> {
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    let url = process.env.NEXT_PUBLIC_APP_URL.trim()
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = `https://${url}`
-    }
-    return url.replace(/\/$/, '')
-  }
-
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/\/$/, '')}`
-  }
-
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL.replace(/\/$/, '')}`
-  }
-
+  // 1. Try request headers first (dynamically detects domain from current user request in production)
   try {
     const { headers } = await import('next/headers')
     const headersList = await headers()
@@ -137,7 +122,34 @@ export async function getAppBaseUrl(): Promise<string> {
       return `${proto}://${host}`
     }
   } catch {
-    // headers unavailable in static context
+    // headers unavailable (e.g. background job or build time)
+  }
+
+  // 2. Explicit NEXT_PUBLIC_APP_URL (if not localhost)
+  if (process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes('localhost')) {
+    let url = process.env.NEXT_PUBLIC_APP_URL.trim()
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`
+    }
+    return url.replace(/\/$/, '')
+  }
+
+  // 3. Vercel deployment URL
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/\/$/, '')}`
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL.replace(/\/$/, '')}`
+  }
+
+  // 4. Fallback to NEXT_PUBLIC_APP_URL if set
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    let url = process.env.NEXT_PUBLIC_APP_URL.trim()
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `http://${url}`
+    }
+    return url.replace(/\/$/, '')
   }
 
   return 'http://localhost:3000'
