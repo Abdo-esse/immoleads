@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { requireAuth, requireAdmin } from '@/lib/actions/auth'
+import { getAppBaseUrl } from '@/lib/utils'
 import type { Profile, Agency } from '@/types'
 
 export interface SettingsData {
@@ -152,6 +153,7 @@ export async function addTeamMember(values: {
 
   // 1. If email invite requested, try inviteUserByEmail first
   if (sendEmailInvite) {
+    const baseUrl = await getAppBaseUrl()
     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
       email,
       {
@@ -160,7 +162,7 @@ export async function addTeamMember(values: {
           agency_id: profile.agency_id,
           role: values.role,
         },
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback?next=/auth/set-password`,
+        redirectTo: `${baseUrl}/auth/callback?next=/auth/set-password`,
       }
     )
 

@@ -106,3 +106,40 @@ export function timeAgo(date: string | Date): string {
     year: then.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
   })
 }
+
+/**
+ * Get the base application URL dynamically.
+ * Prioritizes NEXT_PUBLIC_APP_URL, VERCEL_URL, request headers, then localhost fallback.
+ */
+export async function getAppBaseUrl(): Promise<string> {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    let url = process.env.NEXT_PUBLIC_APP_URL.trim()
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`
+    }
+    return url.replace(/\/$/, '')
+  }
+
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/\/$/, '')}`
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL.replace(/\/$/, '')}`
+  }
+
+  try {
+    const { headers } = await import('next/headers')
+    const headersList = await headers()
+    const host = headersList.get('x-forwarded-host') || headersList.get('host')
+    const proto = headersList.get('x-forwarded-proto') || 'https'
+    if (host && !host.includes('localhost') && !host.includes('127.0.0.1')) {
+      return `${proto}://${host}`
+    }
+  } catch {
+    // headers unavailable in static context
+  }
+
+  return 'http://localhost:3000'
+}
+

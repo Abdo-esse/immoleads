@@ -15,6 +15,49 @@ interface Props {
   property: Property | null
 }
 
+function compressImage(file: File, maxWidth = 1600, maxHeight = 1600, quality = 0.85): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (file.type === 'image/svg+xml' || file.size < 150 * 1024) {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onerror = (err) => reject(err)
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onerror = (err) => reject(err)
+      img.onload = () => {
+        let { width, height } = img
+        if (width > maxWidth || height > maxHeight) {
+          if (width / height > maxWidth / maxHeight) {
+            height = Math.round((height * maxWidth) / width)
+            width = maxWidth
+          } else {
+            width = Math.round((width * maxHeight) / height)
+            height = maxHeight
+          }
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          return resolve(e.target?.result as string)
+        }
+        ctx.drawImage(img, 0, 0, width, height)
+        const compressedBase64 = canvas.toDataURL('image/jpeg', quality)
+        resolve(compressedBase64)
+      }
+      img.src = e.target?.result as string
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
 export function PropertyFormDialog({ open, onOpenChange, property }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -39,34 +82,44 @@ export function PropertyFormDialog({ open, onOpenChange, property }: Props) {
 
     const propertyId = property?.id || 'new-' + Date.now()
 
-    for (const file of Array.from(files)) {
-      if (!file.type.startsWith('image/')) {
-        toast.error(`${file.name} is not an image`)
-        continue
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`${file.name} exceeds 5MB limit`)
-        continue
-      }
+    try {
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith('image/')) {
+          toast.error(`${file.name} n'est pas une image valide`)
+          continue
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error(`${file.name} dépasse la limite de 10 Mo`)
+          continue
+        }
 
-      // Convert to base64
-      const base64 = await new Promise<string>((resolve) => {
-        const reader = new FileReader()
-        reader.onloadend = () => resolve(reader.result as string)
-        reader.readAsDataURL(file)
-      })
+        // Convert & compress image client-side to avoid payload issues and speed up upload
+        let base64: string
+        try {
+          base64 = await compressImage(file)
+        } catch {
+          base64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader()
+            reader.onloadend = () => resolve(reader.result as string)
+            reader.readAsDataURL(file)
+          })
+        }
 
-      const result = await uploadPropertyImage(base64, file.name, propertyId)
-      if (result.error) {
-        toast.error(`Upload failed: ${result.error}`)
-      } else if (result.url) {
-        setImages(prev => [...prev, result.url!])
-        toast.success(`${file.name} uploaded`)
+        const result = await uploadPropertyImage(base64, file.name, propertyId)
+        if (result.error) {
+          toast.error(`Échec du téléversement (${file.name}) : ${result.error}`)
+        } else if (result.url) {
+          setImages(prev => [...prev, result.url!])
+          toast.success(`${file.name} téléversé avec succès`)
+        }
       }
+    } catch (error: any) {
+      console.error('Upload error:', error)
+      toast.error('Une erreur est survenue lors du téléversement')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
-
-    setUploading(false)
-    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   async function handleImageDelete(url: string) {

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { requireSuperAdmin } from '@/lib/actions/auth'
+import { getAppBaseUrl } from '@/lib/utils'
 import type { Agency, Profile, DemoRequest } from '@/types'
 
 export interface SuperAdminStats {
@@ -217,6 +218,7 @@ export async function createAgencyWithAdmin(
 
     // Option B preferred: direct email invitation if sendInvite is true
     if (sendInvite) {
+      const baseUrl = await getAppBaseUrl()
       const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
         adminEmail,
         {
@@ -225,7 +227,7 @@ export async function createAgencyWithAdmin(
             agency_id: agency.id,
             role: 'admin',
           },
-          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback?next=/auth/set-password`,
+          redirectTo: `${baseUrl}/auth/callback?next=/auth/set-password`,
         }
       )
 
@@ -404,6 +406,7 @@ export async function createUserForAgency(
 
   // 1. Try email invite if requested
   if (sendInvite) {
+    const baseUrl = await getAppBaseUrl()
     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
       email,
       {
@@ -412,7 +415,7 @@ export async function createUserForAgency(
           agency_id: agencyId,
           role: userData.role,
         },
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback?next=/auth/set-password`,
+        redirectTo: `${baseUrl}/auth/callback?next=/auth/set-password`,
       }
     )
 
